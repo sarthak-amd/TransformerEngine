@@ -13,6 +13,11 @@
 #include "ck_tile/ops/epilogue.hpp"
 #include "ck_tile/ops/gemm.hpp"
 
+#include "ck_tile/ops/gemm_quant/pipeline/gemm_group_quant_utils.hpp"
+#include "ck_tile/ops/gemm_quant/pipeline/tile_gemm_quant_traits.hpp"
+#include "ck_tile/ops/gemm_quant/pipeline/gemm_quant_pipeline_problem.hpp"
+#include "ck_tile/ops/gemm_quant/kernel/grouped_gemm_quant_kernel.hpp"
+
 namespace transformer_engine {
 namespace grouped_gemm {
 
@@ -20,6 +25,8 @@ using RowMajor = ck_tile::tensor_layout::gemm::RowMajor;
 using ColMajor = ck_tile::tensor_layout::gemm::ColumnMajor;
 
 template <typename TEScalar> struct TETypeToCKType;
+template <> struct TETypeToCKType<transformer_engine::fp8e4m3> { using type = ck_tile::fp8_t; };
+template <> struct TETypeToCKType<transformer_engine::fp8e5m2> { using type = ck_tile::bf8_t; };
 template <> struct TETypeToCKType<transformer_engine::fp16> { using type = ck_tile::half_t; };
 template <> struct TETypeToCKType<transformer_engine::bf16> { using type = ck_tile::bfloat16_t; };
 
@@ -37,6 +44,10 @@ static inline bool get_flat_2d_dims(const transformer_engine::Tensor& t,
 
 static inline const transformer_engine::SimpleTensor& data_view(const transformer_engine::Tensor& t) {
   return t.data; // rowwise data view
+}
+
+static inline const transformer_engine::SimpleTensor& inv_scale_view(const transformer_engine::Tensor& t) {
+  return t.scale_inv; // dequantization scaling factor
 }
 
 // Primus-Turbo-like FP16/BF16 tile configs
@@ -75,11 +86,81 @@ struct TileCfg_256x128x64_padding : TileCfg_256x128x64 {
   static constexpr bool kPadN = true;
 };
 
+
+// Primus-Turbo-like FP8/BF8 tile configs
+// Selection rule:
+//   if (N % 256 == 0) use 256x256x128
+//   else if (N % 128 == 0) use 256x128x128
+//   else use 256x128x128 with N padding enabled
+struct TileCfg_256x256x128 {
+  static constexpr ck_tile::index_t M_Tile = 256;
+  static constexpr ck_tile::index_t N_Tile = 256;
+  static constexpr ck_tile::index_t K_Tile = 128;
+
+  static constexpr ck_tile::index_t M_Warp = 2;
+  static constexpr ck_tile::index_t N_Warp = 2;
+  static constexpr ck_tile::index_t K_Warp = 1;
+
+  static constexpr ck_tile::index_t M_Warp_Tile = 32;
+  static constexpr ck_tile::index_t N_Warp_Tile = 32;
+  static constexpr ck_tile::index_t K_Warp_Tile = 32;
+
+  static constexpr bool kPadM = false;
+  static constexpr bool kPadN = false;
+  static constexpr bool kPadK = false;
+
+  static constexpr bool DoubleSmemBuffer = false;
+
+  static constexpr ck_tile::index_t TilePartitionerGroupNum = 8;
+  static constexpr ck_tile::index_t TilePartitionerM01      = 4;
+};
+
+struct TileCfg_256x128x128 : TileCfg_256x256x128 {
+  static constexpr ck_tile::index_t N_Tile = 128;
+};
+
+struct TileCfg_256x128x128_padding : TileCfg_256x256x128 {
+  static constexpr bool kPadN = true;
+};
+
+template <typename TEType> struct GemmTilePolicy;
+
+// FP16/BF16 – K=64 tiles
+template <>
+struct GemmTilePolicy<fp16> {
+  using Tile256x256 = TileCfg_256x256x64;
+  using Tile256x128 = TileCfg_256x128x64;
+  using TilePadding = TileCfg_256x128x64_padding;
+};
+
+template <>
+struct GemmTilePolicy<bf16> {
+  using Tile256x256 = TileCfg_256x256x64;
+  using Tile256x128 = TileCfg_256x128x64;
+  using TilePadding = TileCfg_256x128x64_padding;
+};
+
+// FP8 – K=128 tiles
+template <>
+struct GemmTilePolicy<fp8e4m3> {
+  using Tile256x256 = TileCfg_256x256x128;
+  using Tile256x128 = TileCfg_256x128x128;
+  using TilePadding = TileCfg_256x128x128_padding;
+};
+
+template <>
+struct GemmTilePolicy<fp8e5m2> {
+  using Tile256x256 = TileCfg_256x256x128;
+  using Tile256x128 = TileCfg_256x128x128;
+  using TilePadding = TileCfg_256x128x128_padding;
+};
+
 // This class instantiates CK_Tile's grouped GEMM pipeline.
 // See e.g. https://github.com/ROCm/composable_kernel/blob/develop/example/ck_tile/03_gemm/universal_gemm_invoker.hpp for reference.
 template <typename AType, typename BType, typename CType,
           typename ALayout, typename BLayout, typename CLayout,
-          typename TileCfg, ck_tile::memory_operation_enum MemOp,
+          typename TileCfg, bool useTensorQuant, 
+          ck_tile::memory_operation_enum MemOp,
           typename AccType = float>
 struct Runner{
   using GemmShape = ck_tile::TileGemmShape<
@@ -90,15 +171,33 @@ struct Runner{
   using Partitioner = ck_tile::GemmSpatiallyLocalTilePartitioner<
       GemmShape, TileCfg::TilePartitionerGroupNum, TileCfg::TilePartitionerM01>;
 
-  using UniversalTraits = ck_tile::PersistentTileGemmUniversalTraits<
+  using AQLayout = RowMajor;
+  using BQLayout = RowMajor;
+  static constexpr ck_tile::QuantType QuantMode = ck_tile::QuantType::TensorQuant;
+
+  using UniversalTraits = std::conditional_t<
+    useTensorQuant,
+    ck_tile::TileGemmQuantTraits<
       TileCfg::kPadM, TileCfg::kPadN, TileCfg::kPadK,
-      TileCfg::DoubleSmemBuffer, ALayout, BLayout, CLayout>;
+      false, false, ALayout, BLayout, CLayout,
+      QuantMode, AQLayout, BQLayout,
+      false, TileCfg::DoubleSmemBuffer, false>,
+    ck_tile::PersistentTileGemmUniversalTraits<
+      TileCfg::kPadM, TileCfg::kPadN, TileCfg::kPadK,
+      TileCfg::DoubleSmemBuffer, ALayout, BLayout, CLayout>>;
 
   static constexpr ck_tile::GemmPipelineScheduler Scheduler =
       ck_tile::GemmPipelineScheduler::Intrawave;
 
-  using Problem = ck_tile::UniversalGemmPipelineProblem<
-      AType, BType, AccType, GemmShape, UniversalTraits, Scheduler>;
+  using Problem = std::conditional_t<
+      useTensorQuant,
+      ck_tile::GemmRowColTensorQuantPipelineProblem<
+        AType, BType, AccType,        
+        AccType, GemmShape, UniversalTraits, 
+        false, AccType>,        
+      ck_tile::UniversalGemmPipelineProblem<
+        AType, BType, AccType,
+        GemmShape, UniversalTraits, Scheduler>>;
 
   using Pipeline = ck_tile::GemmPipelineAgBgCrCompV3<Problem>;
 
@@ -112,11 +211,21 @@ struct Runner{
           TileCfg::M_Warp_Tile, TileCfg::N_Warp_Tile, TileCfg::K_Warp_Tile,
           Problem::TransposeC, MemOp>>;
 
-  using Kernel = ck_tile::GroupedGemmKernel<Partitioner, Pipeline, Epilogue>;
+  using Kernel = std::conditional_t<
+    useTensorQuant,
+    ck_tile::QuantGroupedGemmKernel<
+      Partitioner, Pipeline,
+      Epilogue, QuantMode>,
+    ck_tile::GroupedGemmKernel<
+      Partitioner, Pipeline, Epilogue>>;  
 };
 
-template <typename T, typename ALayout, typename BLayout, typename CLayout,
-          ck_tile::memory_operation_enum MemOp, typename TileCfg>
+template <typename AType, typename BType, typename CType,
+          typename ALayout, typename BLayout, typename CLayout,
+          typename TileCfg,
+          bool useTensorQuant,
+          ck_tile::memory_operation_enum MemOp,
+          typename AccType = float>
 static bool run_grouped_impl(const NVTETensor* A_use,
                              const NVTETensor* B_use,
                              NVTETensor* D,
@@ -127,7 +236,13 @@ static bool run_grouped_impl(const NVTETensor* A_use,
                              size_t workspace_bytes,
                              hipStream_t stream)
 {
-  using Kernel = typename Runner<T, T, T, ALayout, BLayout, CLayout, TileCfg, MemOp>::Kernel;
+  using RunnerT = Runner<AType, BType, CType, ALayout, BLayout, CLayout, TileCfg, useTensorQuant, MemOp, AccType>;
+  using Kernel = typename RunnerT::Kernel;
+
+  using HostArgs = std::conditional_t<
+      useTensorQuant,
+      ck_tile::QuantGroupedGemmHostArgs,
+      ck_tile::GroupedGemmHostArgs<0>>;
 
   const size_t needed = Kernel::GetWorkSpaceSize(group_num);
   if (!workspace || workspace_bytes < needed) {
@@ -135,7 +250,7 @@ static bool run_grouped_impl(const NVTETensor* A_use,
     return false;
   }
 
-  thread_local std::vector<ck_tile::GroupedGemmHostArgs<0>> descs;
+  thread_local std::vector<HostArgs> descs;
   descs.clear();
   descs.reserve(group_num);
 
@@ -179,19 +294,46 @@ static bool run_grouped_impl(const NVTETensor* A_use,
     const ck_tile::index_t stride_B = Bd1;
     const ck_tile::index_t stride_E = Dd1;
 
-    descs.emplace_back(
+    if constexpr (useTensorQuant) {
+      ck_tile::index_t AQK = 1; // Tensor quantization: tensor shape [1]
+      ck_tile::index_t BQK = 1; // Tensor quantization: tensor shape [1]
+      ck_tile::index_t stride_AQ = 1; // Tensor quantization: tensor shape [1]
+      ck_tile::index_t stride_BQ = 1; // Tensor quantization: tensor shape [1]
+      const auto& aq = inv_scale_view(*A_te);
+      const auto& bq = inv_scale_view(*B_te);
+      descs.emplace_back(
         a.dptr,
         b.dptr,
-        std::array<const void*, 0>{},
         d.dptr,
+        aq.dptr,
+        bq.dptr,
         1,
         M,
         N,
         K,
+        AQK,
+        BQK,
         stride_A,
         stride_B,
-        std::array<ck_tile::index_t, 0>{},
-        stride_E);
+        stride_E,
+        stride_AQ,
+        stride_BQ
+      );
+    } else {
+      descs.emplace_back(
+          a.dptr,
+          b.dptr,
+          std::array<const void*, 0>{},
+          d.dptr,
+          1,
+          M,
+          N,
+          K,
+          stride_A,
+          stride_B,
+          std::array<ck_tile::index_t, 0>{},
+          stride_E);
+    }
   }
 
   const dim3 grids = Kernel::GridSize(descs);
@@ -260,48 +402,61 @@ bool ck_tile_grouped_gemm(const NVTETensor* A,
   // Get N from D[0] (assume uniform N across groups)
   int64_t ref_d0 = 0, ref_d1 = 0;
   Tensor* D0_te = convertNVTETensorCheck(D[0]);
+  const auto d_dtype = D0_te->dtype();
   if (!get_flat_2d_dims(*D0_te, ref_d0, ref_d1)) {
     NVTE_ERROR("ck_tile_grouped_gemm: expected rank>=2 for D[0]");
     return false;
   }
   const ck_tile::index_t N = static_cast<ck_tile::index_t>(ref_d1);
 
-  TRANSFORMER_ENGINE_TYPE_SWITCH_16BIT(a_dtype, te_type, {
-    using T = typename TETypeToCKType<te_type>::type;
 
-    auto run_with_tilecfg = [&](auto tile_tag) -> bool {
-      using TileCfgSel = decltype(tile_tag);
 
-      TRANSFORMER_ENGINE_SWITCH_CONDITION(transA_use, kTransA, {
-        using ALayout = std::conditional_t<kTransA, ColMajor, RowMajor>;
+  // Mixed type dispatch: fp16, bf16, fp8 e4m3/e5m2
+  TRANSFORMER_ENGINE_TYPE_SWITCH_MIXED(a_dtype, te_type, {
+    using AType = typename TETypeToCKType<te_type>::type;
+    using BType = AType;
+    using Policy  = GemmTilePolicy<te_type>;
 
-        TRANSFORMER_ENGINE_SWITCH_CONDITION(transB_use, kTransB, {
-          using BLayout = std::conditional_t<kTransB, ColMajor, RowMajor>;
+    TRANSFORMER_ENGINE_TYPE_SWITCH_16BIT(d_dtype, d_te_type, {
+      using CType = typename TETypeToCKType<d_te_type>::type;
+      // Select quantization mode based on input data type
+      constexpr bool TensorQuantMode =
+          std::is_same_v<te_type, fp8e4m3> || std::is_same_v<te_type, fp8e5m2>;   
 
-          if (accumulate) {
-            return run_grouped_impl<T, ALayout, BLayout, RowMajor,
-                                  ck_tile::memory_operation_enum::atomic_add, TileCfgSel>(
-                A_use, B_use, D, group_num, kTransA, kTransB, ws_ptr, ws_bytes, stream);
-          } else {
-            return run_grouped_impl<T, ALayout, BLayout, RowMajor,
-                                  ck_tile::memory_operation_enum::set, TileCfgSel>(
-                A_use, B_use, D, group_num, kTransA, kTransB, ws_ptr, ws_bytes, stream);
-          }
+      auto run_with_tilecfg = [&](auto tile_tag) -> bool {
+        using TileCfgSel = decltype(tile_tag);
+
+        TRANSFORMER_ENGINE_SWITCH_CONDITION(transA_use, kTransA, {
+          using ALayout = std::conditional_t<kTransA, ColMajor, RowMajor>;
+
+          TRANSFORMER_ENGINE_SWITCH_CONDITION(transB_use, kTransB, {
+            using BLayout = std::conditional_t<kTransB, ColMajor, RowMajor>;
+
+            if (accumulate) {
+              return run_grouped_impl<AType, BType, CType, ALayout, BLayout, RowMajor,
+                                    TileCfgSel, TensorQuantMode, ck_tile::memory_operation_enum::atomic_add>(
+                  A_use, B_use, D, group_num, kTransA, kTransB, ws_ptr, ws_bytes, stream);
+            } else {
+              return run_grouped_impl<AType, BType, CType, ALayout, BLayout, RowMajor,
+                                    TileCfgSel, TensorQuantMode, ck_tile::memory_operation_enum::set>(
+                  A_use, B_use, D, group_num, kTransA, kTransB, ws_ptr, ws_bytes, stream);
+            }
+          });
         });
-      });
-    };
+      };
 
-    // Select tile config like Primus-Turbo for FP16/BF16:
-    //   N%256 -> 256x256x64
-    //   N%128 -> 256x128x64
-    //   else  -> 256x128x64 padding
-    // NOTE: We assume N is uniform across groups.
-    if ((N % 256) == 0) {
-      return run_with_tilecfg(TileCfg_256x256x64{});
-    } else if ((N % 128) == 0) {
-      return run_with_tilecfg(TileCfg_256x128x64{});
-    } else {
-      return run_with_tilecfg(TileCfg_256x128x64_padding{});
-    }
-  });
+      // Select tile config like Primus-Turbo for FP16/BF16:
+      //   N%256 -> 256x256x64
+      //   N%128 -> 256x128x64
+      //   else  -> 256x128x64 padding
+      // NOTE: We assume N is uniform across groups.
+      if ((N % 256) == 0) {
+        return run_with_tilecfg(typename Policy::Tile256x256{});
+      } else if ((N % 128) == 0) {
+        return run_with_tilecfg(typename Policy::Tile256x128{});
+      } else {
+        return run_with_tilecfg(typename Policy::TilePadding{});
+      }
+    }); // TRANSFORMER_ENGINE_SWITCH_16BIT
+  }); // TRANSFORMER_ENGINE_TYPE_SWITCH_MIXED
 }

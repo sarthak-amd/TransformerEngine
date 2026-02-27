@@ -97,7 +97,7 @@ backends_inference = ["FlashAttention", "UnfusedAttention", "FusedAttention"]
 module_inference = ["TransformerLayer", "MultiheadAttention"]
 input_formats_inference = ["sbhd", "bshd"]
 
-param_types = [torch.float32, torch.float16]
+param_types = [torch.float32, torch.float16, torch.float8_e4m3fnuz]
 if is_bf16_compatible():  # bf16 requires sm_80 or higher
     param_types.append(torch.bfloat16)
 
@@ -2140,6 +2140,8 @@ def test_grouped_linear_accuracy(
 @pytest.mark.parametrize("num_gemms", [3, 6])
 @pytest.mark.parametrize("bs", batch_sizes)
 @pytest.mark.parametrize("model", ["126m"])
+@pytest.mark.parametrize("fp8_model_params", all_boolean)
+@pytest.mark.parametrize("recipe", fp8_recipes + [None])
 @pytest.mark.parametrize("fuse_wgrad_accumulation", all_boolean)
 @pytest.mark.parametrize("delay_wgrad_compute", all_boolean)
 def test_grouped_linear_accuracy_cutlass(
@@ -2147,6 +2149,8 @@ def test_grouped_linear_accuracy_cutlass(
     num_gemms,
     bs,
     model,
+    recipe,
+    fp8_model_params,
     fuse_wgrad_accumulation,
     delay_wgrad_compute,
 ):
@@ -2156,8 +2160,8 @@ def test_grouped_linear_accuracy_cutlass(
         num_gemms,
         bs,
         model,
-        None,
-        False,
+        recipe,
+        fp8_model_params,
         fuse_wgrad_accumulation,
         False,
         delay_wgrad_compute,
