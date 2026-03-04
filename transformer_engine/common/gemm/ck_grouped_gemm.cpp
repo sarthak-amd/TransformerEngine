@@ -25,6 +25,7 @@ using RowMajor = ck_tile::tensor_layout::gemm::RowMajor;
 using ColMajor = ck_tile::tensor_layout::gemm::ColumnMajor;
 
 template <typename TEScalar> struct TETypeToCKType;
+template <> struct TETypeToCKType<transformer_engine::fp32> { using type = float; };
 template <> struct TETypeToCKType<transformer_engine::fp8e4m3> { using type = ck_tile::fp8_t; };
 template <> struct TETypeToCKType<transformer_engine::fp8e5m2> { using type = ck_tile::bf8_t; };
 template <> struct TETypeToCKType<transformer_engine::fp16> { using type = ck_tile::half_t; };
@@ -159,7 +160,7 @@ struct GemmTilePolicy<fp8e5m2> {
 // See e.g. https://github.com/ROCm/composable_kernel/blob/develop/example/ck_tile/03_gemm/universal_gemm_invoker.hpp for reference.
 template <typename AType, typename BType, typename CType,
           typename ALayout, typename BLayout, typename CLayout,
-          typename TileCfg, bool useTensorQuant, 
+          typename TileCfg, bool useTensorQuant,
           ck_tile::memory_operation_enum MemOp,
           typename AccType = float>
 struct Runner{
@@ -192,9 +193,9 @@ struct Runner{
   using Problem = std::conditional_t<
       useTensorQuant,
       ck_tile::GemmRowColTensorQuantPipelineProblem<
-        AType, BType, AccType,        
-        AccType, GemmShape, UniversalTraits, 
-        false, AccType>,        
+        AType, BType, AccType,
+        AccType, GemmShape, UniversalTraits,
+        false, AccType>,
       ck_tile::UniversalGemmPipelineProblem<
         AType, BType, AccType,
         GemmShape, UniversalTraits, Scheduler>>;
@@ -217,7 +218,7 @@ struct Runner{
       Partitioner, Pipeline,
       Epilogue, QuantMode>,
     ck_tile::GroupedGemmKernel<
-      Partitioner, Pipeline, Epilogue>>;  
+      Partitioner, Pipeline, Epilogue>>;
 };
 
 template <typename AType, typename BType, typename CType,
@@ -409,19 +410,17 @@ bool ck_tile_grouped_gemm(const NVTETensor* A,
   }
   const ck_tile::index_t N = static_cast<ck_tile::index_t>(ref_d1);
 
-
-
   // Mixed type dispatch: fp16, bf16, fp8 e4m3/e5m2
   TRANSFORMER_ENGINE_TYPE_SWITCH_MIXED(a_dtype, te_type, {
     using AType = typename TETypeToCKType<te_type>::type;
     using BType = AType;
     using Policy  = GemmTilePolicy<te_type>;
 
-    TRANSFORMER_ENGINE_TYPE_SWITCH_16BIT(d_dtype, d_te_type, {
+    TRANSFORMER_ENGINE_TYPE_SWITCH_OUTPUT(d_dtype, d_te_type, {
       using CType = typename TETypeToCKType<d_te_type>::type;
       // Select quantization mode based on input data type
       constexpr bool TensorQuantMode =
-          std::is_same_v<te_type, fp8e4m3> || std::is_same_v<te_type, fp8e5m2>;   
+          std::is_same_v<te_type, fp8e4m3> || std::is_same_v<te_type, fp8e5m2>;
 
       auto run_with_tilecfg = [&](auto tile_tag) -> bool {
         using TileCfgSel = decltype(tile_tag);
