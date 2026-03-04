@@ -97,7 +97,7 @@ backends_inference = ["FlashAttention", "UnfusedAttention", "FusedAttention"]
 module_inference = ["TransformerLayer", "MultiheadAttention"]
 input_formats_inference = ["sbhd", "bshd"]
 
-param_types = [torch.float32, torch.float16, torch.float8_e4m3fnuz]
+param_types = [torch.float32, torch.float16]
 if is_bf16_compatible():  # bf16 requires sm_80 or higher
     param_types.append(torch.bfloat16)
 

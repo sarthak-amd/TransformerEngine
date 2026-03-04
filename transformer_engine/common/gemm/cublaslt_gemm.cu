@@ -852,9 +852,11 @@ void nvte_multi_tensor_gemm(const NVTETensor *A, const NVTETensor *B, NVTETensor
     auto A_dt = inputA->data.dtype;
     auto B_dt = inputB->data.dtype;
     auto D_dt = OutputD->data.dtype;
-    return (A_dt == B_dt) && (A_dt == D_dt) &&
+    return (A_dt == B_dt) &&
            (A_dt == transformer_engine::DType::kFloat16 ||
-            A_dt == transformer_engine::DType::kBFloat16);
+            A_dt == transformer_engine::DType::kBFloat16 ||
+            A_dt == transformer_engine::DType::kFloat8E4M3 ||
+            A_dt == transformer_engine::DType::kFloat8E5M2);
 #else
     auto A_type = get_cuda_dtype(inputA->data.dtype);
     auto B_type = get_cuda_dtype(inputB->data.dtype);
