@@ -435,10 +435,12 @@ bool ck_tile_grouped_gemm(const NVTETensor* A,
     ws_bytes = ws_te->data.numel() * typeToSize(ws_te->data.dtype);
   }
 
-  // Normalize similar to upstream
-  // See:
-  // transformer_engine/common/gemm/cutlass_grouped_gemm.cu
-  // I.e., swap A and B, as well as transa and transb.
+
+  // Normalize operand order to match upstream CUTLASS path.
+  // TE grouped GEMM frontend passes (A=weights, B=inputs) with layout "TN",
+  // i.e. effectively W^T * X. The backend kernels expect inputs first
+  // (X * W^T), so swap A/B and their transpose flags while preserving
+  // the same mathematical operation.
   const NVTETensor* A_use = B;
   const NVTETensor* B_use = A;
   const bool transA_use = transB;
