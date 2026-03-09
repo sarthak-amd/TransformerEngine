@@ -205,6 +205,8 @@ else()
        gemm/ck_grouped_gemm.cpp
        gemm/ck_grouped_gemm_fp16.cpp
        gemm/ck_grouped_gemm_fp8.cpp
+       gemm/ck_grouped_gemm_fp16_instantiations.cpp
+       gemm/ck_grouped_gemm_fp8_instantiations.cpp
        amd_detail/system.cpp)
 
   # process source code files
