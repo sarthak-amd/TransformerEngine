@@ -203,10 +203,12 @@ else()
        fused_attn_rocm/utils.cpp
        gemm/rocm_gemm.cu
        gemm/ck_grouped_gemm.cpp
-       gemm/ck_grouped_gemm_fp16.cpp
        gemm/ck_grouped_gemm_fp8.cpp
-       gemm/ck_grouped_gemm_fp16_instantiations.cpp
+       gemm/ck_grouped_gemm_fp8_factory.cpp
        gemm/ck_grouped_gemm_fp8_instantiations.cpp
+       gemm/ck_grouped_gemm_fp16.cpp
+       gemm/ck_grouped_gemm_fp16_factory.cpp
+       gemm/ck_grouped_gemm_fp16_instantiations.cpp
        amd_detail/system.cpp)
 
   # process source code files
