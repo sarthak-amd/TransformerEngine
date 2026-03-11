@@ -204,19 +204,33 @@ else()
        gemm/rocm_gemm.cu
        gemm/ck_grouped_gemm.cpp
        gemm/ck_grouped_gemm_fp8.cpp
-       gemm/ck_grouped_gemm_fp8_factory.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_fp8_fp16_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_fp8_fp32_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_fp8_bf16_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_bf8_fp16_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_bf8_fp32_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_bf8_bf16_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_fp8_fp16_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_fp8_fp32_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_fp8_bf16_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_bf8_fp16_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_bf8_fp32_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_bf8_bf16_instantiations.cpp
+       gemm/ck_grouped_gemm_fp8_factory_common.cpp
+       gemm/ck_grouped_gemm_fp8_factory_gfx942.cpp
+       gemm/ck_grouped_gemm_fp8_factory_gfx950.cpp
+       gemm/instantiations/ck_grouped_gemm_fp8_fp8_fp16_gfx942_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_fp8_fp8_fp32_gfx942_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_fp8_fp8_bf16_gfx942_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_bf8_bf8_fp16_gfx942_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_bf8_bf8_fp32_gfx942_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_bf8_bf8_bf16_gfx942_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_bf8_fp8_fp16_gfx942_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_bf8_fp8_fp32_gfx942_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_bf8_fp8_bf16_gfx942_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_fp8_bf8_fp16_gfx942_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_fp8_bf8_fp32_gfx942_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_fp8_bf8_bf16_gfx942_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_fp8_fp8_fp16_gfx950_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_fp8_fp8_fp32_gfx950_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_fp8_fp8_bf16_gfx950_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_bf8_bf8_fp16_gfx950_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_bf8_bf8_fp32_gfx950_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_bf8_bf8_bf16_gfx950_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_bf8_fp8_fp16_gfx950_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_bf8_fp8_fp32_gfx950_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_bf8_fp8_bf16_gfx950_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_fp8_bf8_fp16_gfx950_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_fp8_bf8_fp32_gfx950_instantiations.cpp
+       gemm/instantiations/ck_grouped_gemm_fp8_bf8_bf16_gfx950_instantiations.cpp
        gemm/ck_grouped_gemm_fp16.cpp
        gemm/ck_grouped_gemm_fp16_factory.cpp
        gemm/instantiations/ck_grouped_gemm_bf16_bf16_bf16_instantiations.cpp

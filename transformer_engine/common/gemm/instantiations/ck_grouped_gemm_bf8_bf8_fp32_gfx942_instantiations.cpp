@@ -1,4 +1,5 @@
-#include "../ck_grouped_gemm_fp8_impl.h"
+#if !__HIP_DEVICE_COMPILE__ || defined(__gfx942__)
+#include "../ck_grouped_gemm_fp8_gfx942_impl.h"
 
 namespace transformer_engine {
 namespace grouped_gemm {
@@ -14,3 +15,4 @@ APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER, ck_tile::bf8_t, ck_tile::bf8_t, 
 
 } // namespace grouped_gemm
 } // namespace transformer_engine
+#endif

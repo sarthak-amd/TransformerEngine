@@ -5,7 +5,7 @@
  ************************************************************************/
 
 #include "ck_grouped_gemm_common.h"
-
+#include <iostream>
 bool ck_tile_grouped_gemm(const NVTETensor* A,
                           const NVTETensor* B,
                           NVTETensor* D,
