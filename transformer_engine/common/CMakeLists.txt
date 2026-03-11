@@ -255,6 +255,42 @@ else()
         fused_attn_rocm/fused_attn.cpp
         gemm/rocm_gemm.cu
         gemm/ck_grouped_gemm.cpp
+        gemm/ck_grouped_gemm_fp8.cpp
+        gemm/ck_grouped_gemm_fp8_factory_common.cpp
+        gemm/ck_grouped_gemm_fp8_factory_gfx942.cpp
+        gemm/ck_grouped_gemm_fp8_factory_gfx950.cpp
+        gemm/instantiations/ck_grouped_gemm_fp8_fp8_fp16_gfx942_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_fp8_fp8_fp32_gfx942_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_fp8_fp8_bf16_gfx942_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_bf8_bf8_fp16_gfx942_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_bf8_bf8_fp32_gfx942_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_bf8_bf8_bf16_gfx942_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_bf8_fp8_fp16_gfx942_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_bf8_fp8_fp32_gfx942_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_bf8_fp8_bf16_gfx942_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_fp8_bf8_fp16_gfx942_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_fp8_bf8_fp32_gfx942_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_fp8_bf8_bf16_gfx942_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_fp8_fp8_fp16_gfx950_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_fp8_fp8_fp32_gfx950_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_fp8_fp8_bf16_gfx950_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_bf8_bf8_fp16_gfx950_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_bf8_bf8_fp32_gfx950_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_bf8_bf8_bf16_gfx950_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_bf8_fp8_fp16_gfx950_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_bf8_fp8_fp32_gfx950_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_bf8_fp8_bf16_gfx950_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_fp8_bf8_fp16_gfx950_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_fp8_bf8_fp32_gfx950_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_fp8_bf8_bf16_gfx950_instantiations.cpp
+        gemm/ck_grouped_gemm_fp16.cpp
+        gemm/ck_grouped_gemm_fp16_factory.cpp
+        gemm/instantiations/ck_grouped_gemm_bf16_bf16_bf16_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_bf16_bf16_fp16_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_bf16_bf16_fp32_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_fp16_fp16_bf16_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_fp16_fp16_fp16_instantiations.cpp
+        gemm/instantiations/ck_grouped_gemm_fp16_fp16_fp32_instantiations.cpp
         amd_detail/system.cpp)
     list(APPEND transformer_engine_cuda_sources
         fused_attn_rocm/fused_attn_aotriton.cpp
@@ -312,50 +348,6 @@ endif()
 add_library(transformer_engine SHARED ${transformer_engine_SOURCES})
 
 else()
-  list(APPEND transformer_engine_SOURCES
-       fused_attn_rocm/fused_attn.cpp
-       fused_attn_rocm/fused_attn_aotriton.cpp
-       fused_attn_rocm/fused_attn_ck.cpp
-       fused_attn_rocm/utils.cpp
-       gemm/rocm_gemm.cu
-       gemm/ck_grouped_gemm.cpp
-       gemm/ck_grouped_gemm_fp8.cpp
-       gemm/ck_grouped_gemm_fp8_factory_common.cpp
-       gemm/ck_grouped_gemm_fp8_factory_gfx942.cpp
-       gemm/ck_grouped_gemm_fp8_factory_gfx950.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_fp8_fp16_gfx942_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_fp8_fp32_gfx942_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_fp8_bf16_gfx942_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_bf8_fp16_gfx942_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_bf8_fp32_gfx942_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_bf8_bf16_gfx942_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_fp8_fp16_gfx942_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_fp8_fp32_gfx942_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_fp8_bf16_gfx942_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_bf8_fp16_gfx942_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_bf8_fp32_gfx942_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_bf8_bf16_gfx942_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_fp8_fp16_gfx950_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_fp8_fp32_gfx950_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_fp8_bf16_gfx950_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_bf8_fp16_gfx950_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_bf8_fp32_gfx950_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_bf8_bf16_gfx950_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_fp8_fp16_gfx950_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_fp8_fp32_gfx950_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf8_fp8_bf16_gfx950_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_bf8_fp16_gfx950_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_bf8_fp32_gfx950_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp8_bf8_bf16_gfx950_instantiations.cpp
-       gemm/ck_grouped_gemm_fp16.cpp
-       gemm/ck_grouped_gemm_fp16_factory.cpp
-       gemm/instantiations/ck_grouped_gemm_bf16_bf16_bf16_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf16_bf16_fp16_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_bf16_bf16_fp32_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp16_fp16_bf16_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp16_fp16_fp16_instantiations.cpp
-       gemm/instantiations/ck_grouped_gemm_fp16_fp16_fp32_instantiations.cpp
-       amd_detail/system.cpp)
 
   # process source code files
   set(TE ${CMAKE_CURRENT_SOURCE_DIR}/../..)
@@ -400,9 +392,6 @@ set_property(
   APPEND
   PROPERTY
   COMPILE_OPTIONS "--generate-code=arch=compute_90a,code=sm_90a;-g0")
-else()
-  message(FATAL_ERROR "cutlass gemm/cutlass_grouped_gemm.cu kernel required sm 90a")
-endif()
 else()
   set(CK_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../3rdparty/aiter/3rdparty/composable_kernel)
   target_include_directories(transformer_engine PRIVATE ${CK_ROOT}/include)
