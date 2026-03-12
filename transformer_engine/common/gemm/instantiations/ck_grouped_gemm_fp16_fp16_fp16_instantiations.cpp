@@ -1,3 +1,9 @@
+/*************************************************************************
+ * Copyright (c) 2026, Advanced Micro Devices, Inc. All rights reserved.
+ *
+ * License for AMD contributions = MIT. See LICENSE for more information
+ ************************************************************************/
+
 #include "../ck_grouped_gemm_fp16_impl.h"
 
 namespace transformer_engine {

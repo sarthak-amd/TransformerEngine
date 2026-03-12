@@ -4,7 +4,7 @@
  * License for AMD contributions = MIT. See LICENSE for more information
  ************************************************************************/
 
- #include "ck_grouped_gemm_common.h"
+#include "ck_grouped_gemm_common.h"
 #include "ck_grouped_gemm_fp16_impl.h"
 
 namespace transformer_engine {

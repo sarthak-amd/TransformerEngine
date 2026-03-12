@@ -1,3 +1,9 @@
+/*************************************************************************
+ * Copyright (c) 2026, Advanced Micro Devices, Inc. All rights reserved.
+ *
+ * License for AMD contributions = MIT. See LICENSE for more information
+ ************************************************************************/
+
 #if !__HIP_DEVICE_COMPILE__ || defined(__gfx942__)
 #include "../ck_grouped_gemm_fp8_gfx942_impl.h"
 
@@ -5,13 +11,13 @@ namespace transformer_engine {
 namespace grouped_gemm {
 
 // FP8_E4M3 * FP8_E5M2 = BF16
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_256x256x128, ck_tile::memory_operation_enum::set)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_256x128x128, ck_tile::memory_operation_enum::set)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_256x128x128_padding, ck_tile::memory_operation_enum::set)
+APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_GFX942_256x256x128_32x32x32_2x2x1, ck_tile::memory_operation_enum::set)
+APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_GFX942_256x128x128_32x32x32_2x2x1, ck_tile::memory_operation_enum::set)
+APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_GFX942_256x128x128_padding, ck_tile::memory_operation_enum::set)
 
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_256x256x128, ck_tile::memory_operation_enum::atomic_add)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_256x128x128, ck_tile::memory_operation_enum::atomic_add)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_256x128x128_padding, ck_tile::memory_operation_enum::atomic_add)
+APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_GFX942_256x256x128_32x32x32_2x2x1, ck_tile::memory_operation_enum::atomic_add)
+APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_GFX942_256x128x128_32x32x32_2x2x1, ck_tile::memory_operation_enum::atomic_add)
+APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_GFX942_256x128x128_padding, ck_tile::memory_operation_enum::atomic_add)
 
 } // namespace grouped_gemm
 } // namespace transformer_engine

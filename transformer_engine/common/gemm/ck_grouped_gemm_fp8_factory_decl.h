@@ -1,3 +1,9 @@
+/*************************************************************************
+ * Copyright (c) 2026, Advanced Micro Devices, Inc. All rights reserved.
+ *
+ * License for AMD contributions = MIT. See LICENSE for more information
+ ************************************************************************/
+
 #pragma once
 
 #include "ck_grouped_gemm_common.h"

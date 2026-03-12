@@ -3,6 +3,7 @@
  *
  * License for AMD contributions = MIT. See LICENSE for more information
  ************************************************************************/
+
 #if !__HIP_DEVICE_COMPILE__ || defined(__gfx942__)
 
 #include "ck_grouped_gemm_common.h"
@@ -20,8 +21,11 @@ std::unique_ptr<RunnerInterface> make_fp8_runner_typed_gfx942(DType d_dtype, con
     TRANSFORMER_ENGINE_TYPE_SWITCH_NON_FP8ONLY(d_dtype, d_te_type, {
         using CType = typename TETypeToCKType<d_te_type>::type;
         if (ctx.N % 256 == 0) {
+          // we check whether the operand order is bf8/fp8 (as opposed to fp8/bf8) because there is no supported
+          // WarpGemmMfma_f32_32x32x32_bf8_fp8 in CK's warp gemm dispatcher
+          // See: ops/gemm/warp/warp_gemm_dispatcher.hpp
           if constexpr (std::is_same_v<AType, ck_tile::bf8_t> && std::is_same_v<BType, ck_tile::fp8_t>) {
-            using TileCfg = TileCfg_256x256x128_k16;
+            using TileCfg = TileCfg_GFX942_256x256x128_32x32x16_2x2x1;
             if (ctx.accumulate) {
               using Runner = QuantGroupedGemmRunner<AType, BType, CType,
                                                   ALayout, BLayout, CLayout,
@@ -34,7 +38,7 @@ std::unique_ptr<RunnerInterface> make_fp8_runner_typed_gfx942(DType d_dtype, con
               runner = std::make_unique<Runner>();
             }
           } else {
-            using TileCfg = TileCfg_256x256x128;
+            using TileCfg = TileCfg_GFX942_256x256x128_32x32x32_2x2x1;
             if (ctx.accumulate) {
               using Runner = QuantGroupedGemmRunner<AType, BType, CType,
                                                   ALayout, BLayout, CLayout,
@@ -49,7 +53,7 @@ std::unique_ptr<RunnerInterface> make_fp8_runner_typed_gfx942(DType d_dtype, con
           }
         } else if (ctx.N % 128 == 0) {
            if constexpr (std::is_same_v<AType, ck_tile::bf8_t> && std::is_same_v<BType, ck_tile::fp8_t>) {
-             using TileCfg = TileCfg_256x128x128_k16;
+             using TileCfg = TileCfg_GFX942_256x128x128_32x32x16_2x2x1;
             if (ctx.accumulate) {
               using Runner = QuantGroupedGemmRunner<AType, BType, CType,
                                                   ALayout, BLayout, CLayout,
@@ -62,7 +66,7 @@ std::unique_ptr<RunnerInterface> make_fp8_runner_typed_gfx942(DType d_dtype, con
               runner = std::make_unique<Runner>();
             }
            } else {
-            using TileCfg = TileCfg_256x128x128;
+            using TileCfg = TileCfg_GFX942_256x128x128_32x32x32_2x2x1;
             if (ctx.accumulate) {
               using Runner = QuantGroupedGemmRunner<AType, BType, CType,
                                                   ALayout, BLayout, CLayout,
@@ -77,7 +81,7 @@ std::unique_ptr<RunnerInterface> make_fp8_runner_typed_gfx942(DType d_dtype, con
            }
         } else {
             if constexpr (std::is_same_v<AType, ck_tile::bf8_t> && std::is_same_v<BType, ck_tile::fp8_t>) {
-              using TileCfg = TileCfg_256x128x128_k16_padding;
+              using TileCfg = TileCfg_GFX942_256x128x128_32x32x16_2x2x1_padding;
               if (ctx.accumulate) {
                 using Runner = QuantGroupedGemmRunner<AType, BType, CType,
                                                     ALayout, BLayout, CLayout,
@@ -90,7 +94,7 @@ std::unique_ptr<RunnerInterface> make_fp8_runner_typed_gfx942(DType d_dtype, con
                 runner = std::make_unique<Runner>();
               }
             } else {
-              using TileCfg = TileCfg_256x128x128_padding;
+              using TileCfg = TileCfg_GFX942_256x128x128_padding;
               if (ctx.accumulate) {
                 using Runner = QuantGroupedGemmRunner<AType, BType, CType,
                                                     ALayout, BLayout, CLayout,
