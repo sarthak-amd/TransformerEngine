@@ -9,7 +9,7 @@
         "cudaFuncSetAttribute(" : "hipFuncSetAttribute((const void*)",
         "__nv_bfloat162":"__hip_bfloat162",
         "cuda::getCurrentCUDAStream" : "hip::getCurrentHIPStreamMasqueradingAsCUDA",
-        "cudaLaunchKernel": "hipLaunchKernelExC",
+        "cudaLaunchKernelExC": "hipLaunchKernelExC",
         "CUmemGenericAllocationHandle": "hipMemGenericAllocationHandle_t",
         "cudaLaunchConfig_t": "hipLaunchConfig_t",
         "cudaLaunchAttribute": "hipLaunchAttribute",
