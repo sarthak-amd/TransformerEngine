@@ -1142,14 +1142,12 @@ void nvte_multi_tensor_gemm(const NVTETensor *A, const NVTETensor *B, NVTETensor
     auto B_dt = inputB->data.dtype;
     auto D_dt = OutputD->data.dtype;
     return (
-            // FP8 path (your branch)
             (A_dt == transformer_engine::DType::kFloat8E4M3 ||
             A_dt == transformer_engine::DType::kFloat8E5M2) &&
             (B_dt == transformer_engine::DType::kFloat8E4M3 ||
             B_dt == transformer_engine::DType::kFloat8E5M2)
           ) ||
           (
-            // FP16/BF16 path (dev branch requirement)
             (A_dt == B_dt) && (A_dt == D_dt) &&
             (A_dt == transformer_engine::DType::kFloat16 ||
             A_dt == transformer_engine::DType::kBFloat16)

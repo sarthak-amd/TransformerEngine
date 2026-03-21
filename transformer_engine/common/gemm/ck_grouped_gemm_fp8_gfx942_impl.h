@@ -32,8 +32,8 @@ namespace grouped_gemm {
 // -------------------------
 
 struct TileCfg_GFX942_256x256x128_32x32x32_2x2x1 {
-  static constexpr ck_tile::index_t M_Tile = 256;
-  static constexpr ck_tile::index_t N_Tile = 256;
+  static constexpr ck_tile::index_t M_Tile = 128;
+  static constexpr ck_tile::index_t N_Tile = 128;
   static constexpr ck_tile::index_t K_Tile = 128;
 
   static constexpr ck_tile::index_t M_Warp = 2;
@@ -67,8 +67,8 @@ struct TileCfg_GFX942_256x128x128_padding : TileCfg_GFX942_256x128x128_32x32x32_
 // -------------------------
 
 struct TileCfg_GFX942_256x256x128_32x32x16_2x2x1 {
-  static constexpr ck_tile::index_t M_Tile = 256;
-  static constexpr ck_tile::index_t N_Tile = 256;
+  static constexpr ck_tile::index_t M_Tile = 128;
+  static constexpr ck_tile::index_t N_Tile = 128;
   static constexpr ck_tile::index_t K_Tile = 128;
 
   static constexpr ck_tile::index_t M_Warp = 2;

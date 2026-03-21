@@ -36,6 +36,8 @@ struct GroupedGemmRunContext {
     void* workspace = nullptr;
     size_t workspace_bytes = 0;
     hipStream_t stream = nullptr;
+
+    bool use_b_columnwise_data;
 };
 
 // Treat TE tensors as generalized 2D matrices by flattening:

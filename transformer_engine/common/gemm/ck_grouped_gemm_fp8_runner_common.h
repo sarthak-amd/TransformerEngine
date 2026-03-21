@@ -50,7 +50,6 @@ template <typename AType, typename BType, typename CType,
           typename AccType = float>
 class QuantGroupedGemmRunner : public RunnerInterface {
 public:
-    // hard-coded for tensor quant for now
     static constexpr ck_tile::QuantType QuantMode = ck_tile::QuantType::TensorQuant;
 
     using GemmShape = ck_tile::TileGemmShape<
@@ -64,14 +63,14 @@ public:
     using AQLayout = RowMajor;
     using BQLayout = RowMajor;
 
-    using UniversalTraits = 
+    using UniversalTraits =
         ck_tile::TileGemmQuantTraits<
             TileCfg::kPadM, TileCfg::kPadN, TileCfg::kPadK,
             false, false, ALayout, BLayout, CLayout,
             QuantMode, AQLayout, BQLayout,
             false, TileCfg::DoubleSmemBuffer, false>;
-    
-    using Problem =  ck_tile::GemmRowColTensorQuantPipelineProblem<
+
+    using Problem = ck_tile::GemmRowColTensorQuantPipelineProblem<
             AType, BType, AccType,
             AccType, GemmShape, UniversalTraits,
             false, AccType>;
@@ -87,9 +86,8 @@ public:
             TileCfg::M_Warp, TileCfg::N_Warp,
             TileCfg::M_Warp_Tile, TileCfg::N_Warp_Tile, TileCfg::K_Warp_Tile,
             Problem::TransposeC, MemOp>>;
-    
-    using Kernel = ck_tile::QuantGroupedGemmKernel<Partitioner, Pipeline, Epilogue, QuantMode>;
 
+    using Kernel = ck_tile::QuantGroupedGemmKernel<Partitioner, Pipeline, Epilogue, QuantMode>;
     using HostArgs = ck_tile::QuantGroupedGemmHostArgs;
 
 public:
@@ -98,8 +96,10 @@ public:
        if (!ctx.workspace || ctx.workspace_bytes < needed) {
            NVTE_ERROR("ck_tile_grouped_gemm: insufficient workspace. Needed bytes=", needed);
        }
+
       std::vector<HostArgs> descs;
       descs.reserve(ctx.group_num);
+
       for (int i = 0; i < ctx.group_num; ++i) {
           const transformer_engine::Tensor* const A_te =
               transformer_engine::convertNVTETensorCheck(ctx.A[i]);
@@ -109,15 +109,32 @@ public:
               transformer_engine::convertNVTETensorCheck(ctx.D[i]);
 
           const auto& a = data_view(*A_te);
-          const auto& b = data_view(*B_te);
           const auto& d = data_view(*D_te);
 
-          int64_t Ad0 = 0, Ad1 = 0, Bd0 = 0, Bd1 = 0, Dd0 = 0, Dd1 = 0;
-          if (!get_flat_2d_dims(*A_te, Ad0, Ad1) ||
-              !get_flat_2d_dims(*B_te, Bd0, Bd1) ||
-              !get_flat_2d_dims(*D_te, Dd0, Dd1)) {
-              NVTE_ERROR("ck_tile_grouped_gemm: expected all groups to be rank>=2.");
+          const transformer_engine::SimpleTensor* b_src = nullptr;
+          if (ctx.use_b_columnwise_data) {
+              if (!B_te->has_columnwise_data()) {
+                  NVTE_ERROR("ck_tile_grouped_gemm: ctx.use_b_columnwise_data=true but columnwise_data is absent.");
+              }
+              b_src = &B_te->columnwise_data;
+          } else {
+              b_src = &B_te->data;
           }
+
+          const auto& b = *b_src;
+
+          int64_t Ad0 = 0, Ad1 = 0, Dd0 = 0, Dd1 = 0;
+          if (!get_flat_2d_dims(*A_te, Ad0, Ad1) ||
+              !get_flat_2d_dims(*D_te, Dd0, Dd1)) {
+              NVTE_ERROR("ck_tile_grouped_gemm: expected A and D to be rank>=2.");
+          }
+
+          if (b.shape.size() < 2) {
+              NVTE_ERROR("ck_tile_grouped_gemm: expected chosen B source to be rank>=2.");
+          }
+
+          int64_t Bd0 = static_cast<int64_t>(b.shape[b.shape.size() - 2]);
+          int64_t Bd1 = static_cast<int64_t>(b.shape[b.shape.size() - 1]);
 
           const int64_t M  = ctx.transA ? Ad1 : Ad0;
           const int64_t K  = ctx.transA ? Ad0 : Ad1;
@@ -125,18 +142,26 @@ public:
           const int64_t Kb = ctx.transB ? Bd1 : Bd0;
 
           if (Kb != K) {
-              NVTE_ERROR("ck_tile_grouped_gemm: K mismatch between A and B in group ", i);
+              NVTE_ERROR("ck_tile_grouped_gemm: K mismatch between A and B in group ", i,
+                         ". op(A)=", M, "x", K,
+                         " op(B)=", Kb, "x", N,
+                         " raw A=", Ad0, "x", Ad1,
+                         " raw B=", Bd0, "x", Bd1,
+                         " use_b_columnwise_data=", static_cast<int>(ctx.use_b_columnwise_data),
+                         " transA=", static_cast<int>(ctx.transA),
+                         " transB=", static_cast<int>(ctx.transB));
           }
 
           if (Dd0 != M || Dd1 != N) {
-              NVTE_ERROR("ck_tile_grouped_gemm: D shape mismatch in group ", i);
+              NVTE_ERROR("ck_tile_grouped_gemm: D shape mismatch in group ", i,
+                         ". D=", Dd0, "x", Dd1,
+                         ", expected=", M, "x", N);
           }
 
-          const ck_tile::index_t stride_A = Ad1;
-          const ck_tile::index_t stride_B = Bd1;
-          const ck_tile::index_t stride_E = Dd1;
-          
-          // Hard-coded to tensor quant for the moment
+          const ck_tile::index_t stride_A = static_cast<ck_tile::index_t>(Ad1);
+          const ck_tile::index_t stride_B = static_cast<ck_tile::index_t>(Bd1);
+          const ck_tile::index_t stride_E = static_cast<ck_tile::index_t>(Dd1);
+
           ck_tile::index_t AQK       = 1;
           ck_tile::index_t BQK       = 1;
           ck_tile::index_t stride_AQ = 1;
@@ -165,24 +190,26 @@ public:
         }
 
         return descs;
-    };
+    }
+
     bool run(const ck_tile::stream_config& stream_cfg,
-                const GroupedGemmRunContext& ctx) override {
+             const GroupedGemmRunContext& ctx) override {
         auto descs = build_descs(ctx);
 
         constexpr int kBlockPerCu = 1;
         const dim3 blocks = Kernel::BlockSize();
         const dim3 grids  = Kernel::GridSize(descs);
         auto kargs = Kernel::MakeKargs(descs);
+
         if (!Kernel::IsSupportedArgument(kargs)) {
             NVTE_ERROR("ck_tile_grouped_gemm: CK_Tile kernel arguments not supported for this config.");
         }
 
         HIP_CHECK_ERROR(hipMemcpyAsync(ctx.workspace,
-                                        kargs.data(),
-                                        kargs.size() * sizeof(typename decltype(kargs)::value_type),
-                                        hipMemcpyHostToDevice,
-                                        ctx.stream));
+                                       kargs.data(),
+                                       kargs.size() * sizeof(typename decltype(kargs)::value_type),
+                                       hipMemcpyHostToDevice,
+                                       ctx.stream));
 
         ck_tile::launch_kernel(
             stream_cfg, ck_tile::make_kernel<kBlockPerCu>(
@@ -190,20 +217,19 @@ public:
                             ck_tile::cast_pointer_to_constant_address_space(ctx.workspace),
                             ctx.group_num));
         return true;
-    };
+    }
 };
 
-// Primus-Turbo-style extern template declarations
-#define DECL_CK_QUANT_GG_RUNNER_EXTERN(AType, BType, CType, ALayout, BLayout, CLayout, TileCfg, MemOp)        \
-        extern template class QuantGroupedGemmRunner<AType, BType, CType, ALayout, BLayout, CLayout, TileCfg, MemOp, float>;
+#define DECL_CK_QUANT_GG_RUNNER_EXTERN(AType, BType, CType, ALayout, BLayout, CLayout, TileCfg, MemOp) \
+    extern template class QuantGroupedGemmRunner<AType, BType, CType, ALayout, BLayout, CLayout, TileCfg, MemOp, float>;
 
-#define DECL_CK_QUANT_GG_RUNNER(AType, BType, CType, ALayout, BLayout, CLayout, TileCfg, MemOp)               \
-        template class QuantGroupedGemmRunner<AType, BType, CType, ALayout, BLayout, CLayout, TileCfg, MemOp, float>;
+#define DECL_CK_QUANT_GG_RUNNER(AType, BType, CType, ALayout, BLayout, CLayout, TileCfg, MemOp) \
+    template class QuantGroupedGemmRunner<AType, BType, CType, ALayout, BLayout, CLayout, TileCfg, MemOp, float>;
 
 #define APPLY_CK_GG_ALL_LAYOUT(MACRO, AType, BType, CType, TileCfg, MemOp)   \
     MACRO(AType, BType, CType, RowMajor, ColMajor, RowMajor, TileCfg, MemOp) \
     MACRO(AType, BType, CType, RowMajor, RowMajor, RowMajor, TileCfg, MemOp) \
     MACRO(AType, BType, CType, ColMajor, RowMajor, RowMajor, TileCfg, MemOp)
 
-}
-}
+}  // namespace grouped_gemm
+}  // namespace transformer_engine
