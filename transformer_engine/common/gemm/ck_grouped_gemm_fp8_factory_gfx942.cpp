@@ -23,106 +23,19 @@ std::unique_ptr<RunnerInterface> make_fp8_runner_typed_gfx942(
 
   TRANSFORMER_ENGINE_TYPE_SWITCH_NON_FP8ONLY(d_dtype, d_te_type, {
     using CType = typename TETypeToCKType<d_te_type>::type;
-
-    if (ctx.N % 256 == 0) {
-      if constexpr (std::is_same_v<AType, ck_tile::bf8_t> &&
-                    std::is_same_v<BType, ck_tile::fp8_t>) {
-        using TileCfg = TileCfg_GFX942_256x256x128_32x32x16_2x2x1;
-        if (ctx.accumulate) {
-          using Runner = QuantGroupedGemmRunner<
-              AType, BType, CType,
-              ALayout, BLayout, CLayout,
-              TileCfg, ck_tile::memory_operation_enum::atomic_add>;
-          runner = std::make_unique<Runner>();
-        } else {
-          using Runner = QuantGroupedGemmRunner<
-              AType, BType, CType,
-              ALayout, BLayout, CLayout,
-              TileCfg, ck_tile::memory_operation_enum::set>;
-          runner = std::make_unique<Runner>();
-        }
-      } else {
-        using TileCfg = TileCfg_GFX942_256x256x128_32x32x32_2x2x1;
-        if (ctx.accumulate) {
-          using Runner = QuantGroupedGemmRunner<
-              AType, BType, CType,
-              ALayout, BLayout, CLayout,
-              TileCfg, ck_tile::memory_operation_enum::atomic_add>;
-          runner = std::make_unique<Runner>();
-        } else {
-          using Runner = QuantGroupedGemmRunner<
-              AType, BType, CType,
-              ALayout, BLayout, CLayout,
-              TileCfg, ck_tile::memory_operation_enum::set>;
-          runner = std::make_unique<Runner>();
-        }
-      }
-    } else if (ctx.N % 128 == 0) {
-      if constexpr (std::is_same_v<AType, ck_tile::bf8_t> &&
-                    std::is_same_v<BType, ck_tile::fp8_t>) {
-        using TileCfg = TileCfg_GFX942_256x128x128_32x32x16_2x2x1;
-        if (ctx.accumulate) {
-          using Runner = QuantGroupedGemmRunner<
-              AType, BType, CType,
-              ALayout, BLayout, CLayout,
-              TileCfg, ck_tile::memory_operation_enum::atomic_add>;
-          runner = std::make_unique<Runner>();
-        } else {
-          using Runner = QuantGroupedGemmRunner<
-              AType, BType, CType,
-              ALayout, BLayout, CLayout,
-              TileCfg, ck_tile::memory_operation_enum::set>;
-          runner = std::make_unique<Runner>();
-        }
-      } else {
-        using TileCfg = TileCfg_GFX942_256x128x128_32x32x32_2x2x1;
-        if (ctx.accumulate) {
-          using Runner = QuantGroupedGemmRunner<
-              AType, BType, CType,
-              ALayout, BLayout, CLayout,
-              TileCfg, ck_tile::memory_operation_enum::atomic_add>;
-          runner = std::make_unique<Runner>();
-        } else {
-          using Runner = QuantGroupedGemmRunner<
-              AType, BType, CType,
-              ALayout, BLayout, CLayout,
-              TileCfg, ck_tile::memory_operation_enum::set>;
-          runner = std::make_unique<Runner>();
-        }
-      }
+    using TileCfg = TileCfg_GFX942_128x128x128_32x32x16_2x2x1;
+    if (ctx.accumulate) {
+      using Runner = QuantGroupedGemmRunner<
+          AType, BType, CType,
+          ALayout, BLayout, CLayout,
+          TileCfg, ck_tile::memory_operation_enum::atomic_add>;
+      runner = std::make_unique<Runner>();
     } else {
-      if constexpr (std::is_same_v<AType, ck_tile::bf8_t> &&
-                    std::is_same_v<BType, ck_tile::fp8_t>) {
-        using TileCfg = TileCfg_GFX942_256x128x128_32x32x16_2x2x1_padding;
-        if (ctx.accumulate) {
-          using Runner = QuantGroupedGemmRunner<
-              AType, BType, CType,
-              ALayout, BLayout, CLayout,
-              TileCfg, ck_tile::memory_operation_enum::atomic_add>;
-          runner = std::make_unique<Runner>();
-        } else {
-          using Runner = QuantGroupedGemmRunner<
-              AType, BType, CType,
-              ALayout, BLayout, CLayout,
-              TileCfg, ck_tile::memory_operation_enum::set>;
-          runner = std::make_unique<Runner>();
-        }
-      } else {
-        using TileCfg = TileCfg_GFX942_256x128x128_padding;
-        if (ctx.accumulate) {
-          using Runner = QuantGroupedGemmRunner<
-              AType, BType, CType,
-              ALayout, BLayout, CLayout,
-              TileCfg, ck_tile::memory_operation_enum::atomic_add>;
-          runner = std::make_unique<Runner>();
-        } else {
-          using Runner = QuantGroupedGemmRunner<
-              AType, BType, CType,
-              ALayout, BLayout, CLayout,
-              TileCfg, ck_tile::memory_operation_enum::set>;
-          runner = std::make_unique<Runner>();
-        }
-      }
+      using Runner = QuantGroupedGemmRunner<
+          AType, BType, CType,
+          ALayout, BLayout, CLayout,
+          TileCfg, ck_tile::memory_operation_enum::set>;
+      runner = std::make_unique<Runner>();
     }
   });
 
