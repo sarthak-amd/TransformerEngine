@@ -48,7 +48,7 @@ bool ck_tile_grouped_gemm(const NVTETensor* A,
   const bool caller_b_is_fp8 =
       caller_b_dtype == DType::kFloat8E4M3 || caller_b_dtype == DType::kFloat8E5M2;
  
-  // Handle pathological NN case during dX GEMM by reading W columnwise and re-formulating as NT
+  // Handle pathological NN case during fp8 dX GEMM by reading W columnwise and re-formulating as NT
   if (!transA_use && !transB_use && caller_a_is_fp8 && caller_b_is_fp8) {
     auto* B0_te = convertNVTETensorCheck(B_use[0]);
     if (B0_te->has_columnwise_data()) {
