@@ -55,51 +55,39 @@ struct TileCfg_GFX942_128x128x128_32x32x16_2x2x1 {
 
 // FP8_E4M3 * FP8_E4M3 = FP16
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::fp8_t, ck_tile::fp8_t, ck_tile::half_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::set)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::fp8_t, ck_tile::fp8_t, ck_tile::half_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::atomic_add)
 
 // FP8_E4M3 * FP8_E4M3 = FP32
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::fp8_t, ck_tile::fp8_t, float, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::set)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::fp8_t, ck_tile::fp8_t, float, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::atomic_add)
 
 // FP8_E4M3 * FP8_E4M3 = BF16
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::fp8_t, ck_tile::fp8_t, ck_tile::bfloat16_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::set)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::fp8_t, ck_tile::fp8_t, ck_tile::bfloat16_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::atomic_add)
 
 // FP8_E5M2 * FP8_E5M2 = FP16
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::bf8_t, ck_tile::bf8_t, ck_tile::half_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::set)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::bf8_t, ck_tile::bf8_t, ck_tile::half_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::atomic_add)
 
 // FP8_E5M2 * FP8_E5M2 = FP32
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::bf8_t, ck_tile::bf8_t, float, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::set)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::bf8_t, ck_tile::bf8_t, float, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::atomic_add)
 
 // FP8_E5M2 * FP8_E5M2 = BF16
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::bf8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::set)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::bf8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::atomic_add)
 
 // FP8_E5M2 * FP8_E4M3 = F16
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::bf8_t, ck_tile::fp8_t, ck_tile::half_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::set)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::bf8_t, ck_tile::fp8_t, ck_tile::half_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::atomic_add)
 
 // FP8_E5M2 * FP8_E4M3 = F32
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::bf8_t, ck_tile::fp8_t, float, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::set)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::bf8_t, ck_tile::fp8_t, float, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::atomic_add)
 
 // FP8_E5M2 * FP8_E4M3 = BF16
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::bf8_t, ck_tile::fp8_t, ck_tile::bfloat16_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::set)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::bf8_t, ck_tile::fp8_t, ck_tile::bfloat16_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::atomic_add)
 
 // FP8_E4M3 * FP8_E5M2 = F16
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::half_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::set)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::half_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::atomic_add)
 
 // FP8_E4M3 * FP8_E5M2 = F32
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::fp8_t, ck_tile::bf8_t, float, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::set)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::fp8_t, ck_tile::bf8_t, float, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::atomic_add)
 
 // FP8_E4M3 * FP8_E5M2 = BF16
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::set)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_QUANT_GG_RUNNER_EXTERN, ck_tile::fp8_t, ck_tile::bf8_t, ck_tile::bfloat16_t, TileCfg_GFX942_128x128x128_32x32x16_2x2x1, ck_tile::memory_operation_enum::atomic_add)
 
 } // namespace grouped_gemm
 } // namespace transformer_engine

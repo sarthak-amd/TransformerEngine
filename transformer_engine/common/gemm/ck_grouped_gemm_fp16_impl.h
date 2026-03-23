@@ -228,54 +228,30 @@ APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, ck_tile::half_t, TileCfg_256x128x64, ck_tile::memory_operation_enum::set)
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, ck_tile::half_t, TileCfg_256x128x64_padding, ck_tile::memory_operation_enum::set)
 
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, ck_tile::half_t, TileCfg_256x256x64, ck_tile::memory_operation_enum::atomic_add)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, ck_tile::half_t, TileCfg_256x128x64, ck_tile::memory_operation_enum::atomic_add)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, ck_tile::half_t, TileCfg_256x128x64_padding, ck_tile::memory_operation_enum::atomic_add)
-
 // FP16 * FP16 = FP32
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, float, TileCfg_256x256x64, ck_tile::memory_operation_enum::set)
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, float, TileCfg_256x128x64, ck_tile::memory_operation_enum::set)
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, float, TileCfg_256x128x64_padding, ck_tile::memory_operation_enum::set)
-
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, float, TileCfg_256x256x64, ck_tile::memory_operation_enum::atomic_add)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, float, TileCfg_256x128x64, ck_tile::memory_operation_enum::atomic_add)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, float, TileCfg_256x128x64_padding, ck_tile::memory_operation_enum::atomic_add)
 
 // FP16 * FP16 = BF16
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, ck_tile::bfloat16_t, TileCfg_256x256x64, ck_tile::memory_operation_enum::set)
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, ck_tile::bfloat16_t, TileCfg_256x128x64, ck_tile::memory_operation_enum::set)
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, ck_tile::bfloat16_t, TileCfg_256x128x64_padding, ck_tile::memory_operation_enum::set)
 
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, ck_tile::bfloat16_t, TileCfg_256x256x64, ck_tile::memory_operation_enum::atomic_add)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, ck_tile::bfloat16_t, TileCfg_256x128x64, ck_tile::memory_operation_enum::atomic_add)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::half_t, ck_tile::half_t, ck_tile::bfloat16_t, TileCfg_256x128x64_padding, ck_tile::memory_operation_enum::atomic_add)
-
 // BF16 * BF16 = FP16
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, ck_tile::half_t, TileCfg_256x256x64, ck_tile::memory_operation_enum::set)
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, ck_tile::half_t, TileCfg_256x128x64, ck_tile::memory_operation_enum::set)
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, ck_tile::half_t, TileCfg_256x128x64_padding, ck_tile::memory_operation_enum::set)
-
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, ck_tile::half_t, TileCfg_256x256x64, ck_tile::memory_operation_enum::atomic_add)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, ck_tile::half_t, TileCfg_256x128x64, ck_tile::memory_operation_enum::atomic_add)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, ck_tile::half_t, TileCfg_256x128x64_padding, ck_tile::memory_operation_enum::atomic_add)
 
 // BF16 * BF16 = FP32
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, float, TileCfg_256x256x64, ck_tile::memory_operation_enum::set)
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, float, TileCfg_256x128x64, ck_tile::memory_operation_enum::set)
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, float, TileCfg_256x128x64_padding, ck_tile::memory_operation_enum::set)
 
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, float, TileCfg_256x256x64, ck_tile::memory_operation_enum::atomic_add)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, float, TileCfg_256x128x64, ck_tile::memory_operation_enum::atomic_add)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, float, TileCfg_256x128x64_padding, ck_tile::memory_operation_enum::atomic_add)
-
 // BF16 * BF16 = BF16
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, ck_tile::bfloat16_t, TileCfg_256x256x64, ck_tile::memory_operation_enum::set)
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, ck_tile::bfloat16_t, TileCfg_256x128x64, ck_tile::memory_operation_enum::set)
 APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, ck_tile::bfloat16_t, TileCfg_256x128x64_padding, ck_tile::memory_operation_enum::set)
-
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, ck_tile::bfloat16_t, TileCfg_256x256x64, ck_tile::memory_operation_enum::atomic_add)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, ck_tile::bfloat16_t, TileCfg_256x128x64, ck_tile::memory_operation_enum::atomic_add)
-APPLY_CK_GG_ALL_LAYOUT(DECL_CK_GG_RUNNER_EXTERN, ck_tile::bfloat16_t, ck_tile::bfloat16_t, ck_tile::bfloat16_t, TileCfg_256x128x64_padding, ck_tile::memory_operation_enum::atomic_add)
 
 }
 }

@@ -31,7 +31,6 @@ struct GroupedGemmRunContext {
     int group_num = 0;
     bool transA = false;
     bool transB = false;
-    bool accumulate = false;
 
     void* workspace = nullptr;
     size_t workspace_bytes = 0;

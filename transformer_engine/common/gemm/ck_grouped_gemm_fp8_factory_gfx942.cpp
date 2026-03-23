@@ -24,19 +24,11 @@ std::unique_ptr<RunnerInterface> make_fp8_runner_typed_gfx942(
   TRANSFORMER_ENGINE_TYPE_SWITCH_NON_FP8ONLY(d_dtype, d_te_type, {
     using CType = typename TETypeToCKType<d_te_type>::type;
     using TileCfg = TileCfg_GFX942_128x128x128_32x32x16_2x2x1;
-    if (ctx.accumulate) {
-      using Runner = QuantGroupedGemmRunner<
-          AType, BType, CType,
-          ALayout, BLayout, CLayout,
-          TileCfg, ck_tile::memory_operation_enum::atomic_add>;
-      runner = std::make_unique<Runner>();
-    } else {
-      using Runner = QuantGroupedGemmRunner<
-          AType, BType, CType,
-          ALayout, BLayout, CLayout,
-          TileCfg, ck_tile::memory_operation_enum::set>;
-      runner = std::make_unique<Runner>();
-    }
+    using Runner = QuantGroupedGemmRunner<
+        AType, BType, CType,
+        ALayout, BLayout, CLayout,
+        TileCfg, ck_tile::memory_operation_enum::set>;
+    runner = std::make_unique<Runner>();
   });
 
   return runner;

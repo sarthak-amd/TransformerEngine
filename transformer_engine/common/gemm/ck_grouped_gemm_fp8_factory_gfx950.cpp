@@ -18,21 +18,16 @@ std::unique_ptr<RunnerInterface> make_fp8_runner_typed_gfx950(DType d_dtype, con
   using AType = typename TETypeToCKType<teA>::type;
   using BType = typename TETypeToCKType<teB>::type;
   using CLayout = RowMajor;
-    TRANSFORMER_ENGINE_TYPE_SWITCH_NON_FP8ONLY(d_dtype, d_te_type, {
-        using CType = typename TETypeToCKType<d_te_type>::type;
-        using TileCfg = TileCfg_GFX950_128x128x128_16x16x128_2x2x1;
-        if (ctx.accumulate) {
-          using Runner = QuantGroupedGemmRunner<AType, BType, CType,
-                                              ALayout, BLayout, CLayout,
-                                              TileCfg, ck_tile::memory_operation_enum::atomic_add>;
-          runner = std::make_unique<Runner>();
-        } else {
-          using Runner = QuantGroupedGemmRunner<AType, BType, CType,
-                                              ALayout, BLayout, CLayout,
-                                              TileCfg, ck_tile::memory_operation_enum::set>;
-          runner = std::make_unique<Runner>();
-        }
-    });
+  
+  TRANSFORMER_ENGINE_TYPE_SWITCH_NON_FP8ONLY(d_dtype, d_te_type, {
+      using CType = typename TETypeToCKType<d_te_type>::type;
+      using TileCfg = TileCfg_GFX950_128x128x128_16x16x128_2x2x1;
+      using Runner = QuantGroupedGemmRunner<
+          AType, BType, CType,
+          ALayout, BLayout, CLayout,
+          TileCfg, ck_tile::memory_operation_enum::set>;
+      runner = std::make_unique<Runner>();
+  });
     return runner;
 }
 

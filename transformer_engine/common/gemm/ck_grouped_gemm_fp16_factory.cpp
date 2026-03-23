@@ -20,44 +20,25 @@ std::unique_ptr<RunnerInterface> make_fp16_runner_typed(DType d_dtype, const Gro
         using CType = typename TETypeToCKType<d_te_type>::type;
         if (ctx.N % 256 == 0) {
             using TileCfg = TileCfg_256x256x64;
-            if (ctx.accumulate) {
-              using Runner = GroupedGemmRunner<AType, BType, CType,
-                                                  ALayout, BLayout, CLayout,
-                                                  TileCfg, ck_tile::memory_operation_enum::atomic_add>;
-              runner = std::make_unique<Runner>();
-            } else {
-              using Runner = GroupedGemmRunner<AType, BType, CType,
-                                    ALayout, BLayout, CLayout,
-                                    TileCfg, ck_tile::memory_operation_enum::set>;
-              runner = std::make_unique<Runner>();
-            }
-            
+            using Runner = GroupedGemmRunner<
+                AType, BType, CType,
+                ALayout, BLayout, CLayout,
+                TileCfg, ck_tile::memory_operation_enum::set>;
+            runner = std::make_unique<Runner>();
         } else if (ctx.N % 128 == 0) {
             using TileCfg = TileCfg_256x128x64;
-            if (ctx.accumulate) {
-              using Runner = GroupedGemmRunner<AType, BType, CType,
-                                                  ALayout, BLayout, CLayout,
-                                                  TileCfg, ck_tile::memory_operation_enum::atomic_add>;
-              runner = std::make_unique<Runner>();
-            } else {
-              using Runner = GroupedGemmRunner<AType, BType, CType,
-                                    ALayout, BLayout, CLayout,
-                                    TileCfg, ck_tile::memory_operation_enum::set>;
-              runner = std::make_unique<Runner>();
-            }
+            using Runner = GroupedGemmRunner<
+                AType, BType, CType,
+                ALayout, BLayout, CLayout,
+                TileCfg, ck_tile::memory_operation_enum::set>;
+            runner = std::make_unique<Runner>();
         } else {
             using TileCfg = TileCfg_256x128x64_padding;
-            if (ctx.accumulate) {
-              using Runner = GroupedGemmRunner<AType, BType, CType,
-                                                  ALayout, BLayout, CLayout,
-                                                  TileCfg, ck_tile::memory_operation_enum::atomic_add>;
-              runner = std::make_unique<Runner>();
-            } else {
-              using Runner = GroupedGemmRunner<AType, BType, CType,
-                                                  ALayout, BLayout, CLayout,
-                                                  TileCfg, ck_tile::memory_operation_enum::set>;
-              runner = std::make_unique<Runner>();
-            }
+            using Runner = GroupedGemmRunner<
+                AType, BType, CType,
+                ALayout, BLayout, CLayout,
+                TileCfg, ck_tile::memory_operation_enum::set>;
+            runner = std::make_unique<Runner>();
         }
     });
     return runner;
