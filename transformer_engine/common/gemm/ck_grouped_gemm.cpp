@@ -20,6 +20,12 @@ bool ck_tile_grouped_gemm(const NVTETensor* A,
     return true;
   }
 
+  // The current CK grouped GEMM path uses CShuffleEpilogueProblem without an explicit
+  // memory-operation template argument, so D accumulation semantics are not guaranteed.
+  // Fall back for accumulate=true to preserve numerics.
+  if (accumulate)
+    return false;
+
   using namespace transformer_engine;
   using namespace transformer_engine::grouped_gemm;
 
